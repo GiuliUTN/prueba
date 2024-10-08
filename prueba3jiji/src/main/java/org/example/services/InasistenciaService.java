@@ -45,7 +45,28 @@ public class InasistenciaService {
     }
 
     public void generarArchivo(){
-
+        Map<String, AtomicInteger> counters = new HashMap<>();
+        inasistencias.forEach(inasistencia -> {
+            String tipoName = inasistencia.getTipo().getName();
+            if (counters.containsKey(tipoName)){
+                counters.get(tipoName).getAndIncrement();
+            } else {
+                counters.put(tipoName, new AtomicInteger(1));
+            }
+        });
+        try (BufferedWriter writer =
+                     new BufferedWriter(new FileWriter(INASISTENCIAXTIPO_FILE_PATH))){
+            writer.append("NombreTipo,Cantidad\n");
+            for(Map.Entry<String, AtomicInteger> entrada: counters.entrySet()){
+                writer.append(entrada.getKey()).append(",")
+                        .append(entrada.getValue().toString())
+                        .append("\n");
+            }
+            writer.flush();
+            System.out.println("Archivo generado correctamente en: " + INASISTENCIAXTIPO_FILE_PATH);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     public void mostrarEstudiantes(){
